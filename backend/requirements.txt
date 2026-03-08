@@ -3,6 +3,6 @@ uvicorn
 pypdf
 faiss-cpu
 numpy
-google-generativeai
+google-genai
 python-dotenv
 python-multipart
