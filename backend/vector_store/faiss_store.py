@@ -8,6 +8,7 @@ class FAISSStore:
 
     def __init__(self):
 
+        # ensure directory exists
         os.makedirs("data/faiss_index", exist_ok=True)
 
         self.index = None
@@ -56,21 +57,30 @@ class FAISSStore:
 
     def load_index(self):
         """
-        Load FAISS index
+        Load FAISS index from disk
         """
 
         if os.path.exists(self.index_path):
 
             self.index = faiss.read_index(self.index_path)
 
-            with open(self.chunk_path) as f:
-                self.chunks = json.load(f)
+            if os.path.exists(self.chunk_path):
+                with open(self.chunk_path) as f:
+                    self.chunks = json.load(f)
 
 
     def search(self, query_embedding, k=3):
         """
         Search similar chunks
         """
+
+        # auto-load index if server restarted
+        if self.index is None:
+            self.load_index()
+
+        # safety check
+        if self.index is None:
+            return []
 
         query_vector = np.array([query_embedding]).astype("float32")
 
@@ -79,7 +89,6 @@ class FAISSStore:
         results = []
 
         for i in indices[0]:
-
             if i < len(self.chunks):
                 results.append(self.chunks[i])
 
