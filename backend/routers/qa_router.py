@@ -15,16 +15,17 @@ def ask_question(data: QuestionRequest):
 
     question = data.question
 
-    # Step 1: Convert question → embedding
+    # Load index
+    store.load_index()
+
+    # Query embedding
     query_embedding = generate_embedding(question)
 
-    # Step 2: Search FAISS
+    # Semantic search
     results = store.search(query_embedding)
 
-    # Step 3: Combine chunks
-    context = "\n".join(results)
+    context = "\n".join(results[:3])
 
-    # Step 4: Generate answer
     answer = generate_answer(context, question)
 
     return {

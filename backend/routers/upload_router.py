@@ -1,39 +1,44 @@
 from fastapi import APIRouter, UploadFile, File
 import os
-import shutil
+import time
 
 from services.pdf_service import extract_text
 from services.chunk_service import chunk_text
+from services.gemini_service import generate_embedding
+from vector_store.faiss_store import store
 
 router = APIRouter()
 
 UPLOAD_DIR = "data/uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
 
-    try:
-        # ensure upload folder exists
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
 
-        file_path = f"{UPLOAD_DIR}/{file.filename}"
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
 
-        # Save uploaded file
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+    # Step 1: Extract text
+    text = extract_text(file_path)
 
-        # Extract text from PDF
-        text = extract_text(file_path)
+    # Step 2: Chunk text
+    chunks = chunk_text(text)
 
-        # Chunk the extracted text
-        chunks = chunk_text(text)
+    # Step 3: Generate embeddings
+    embeddings = []
 
-        return {
-            "message": "PDF processed successfully",
-            "chunks_created": len(chunks),
-            "sample_chunk": chunks[0] if chunks else ""
-        }
+    for chunk in chunks:
+        emb = generate_embedding(chunk)
+        embeddings.append(emb)
+        time.sleep(1)
 
-    except Exception as e:
-        return {"error": str(e)}
+    # Step 4: Store in FAISS
+    store.create_index(embeddings, chunks)
+
+    return {
+        "message": "PDF processed and indexed successfully",
+        "chunks": len(chunks)
+    }
