@@ -1,17 +1,24 @@
 import os
-import time
 from dotenv import load_dotenv
-from google.genai import Client
+from google import genai
+from google.genai import types
 
 load_dotenv()
 
-client = Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+
 
 def generate_embedding(text: str):
 
     response = client.models.embed_content(
         model="gemini-embedding-001",
-        contents=text
+        contents=text,
+        config=types.EmbedContentConfig(
+            task_type="RETRIEVAL_QUERY",
+            output_dimensionality=768
+        )
     )
 
     return response.embeddings[0].values
@@ -19,6 +26,8 @@ def generate_embedding(text: str):
 def generate_answer(context: str, question: str):
 
     prompt = f"""
+You are a helpful assistant.
+
 Answer the question using ONLY the context below.
 
 Context:
@@ -28,24 +37,9 @@ Question:
 {question}
 """
 
-    try:
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
 
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
-        )
-
-        return response.text
-
-    except Exception as e:
-
-        print("Gemini rate limit hit. Waiting 30 seconds...")
-
-        time.sleep(30)
-
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
-        )
-
-        return response.text
+    return response.text
