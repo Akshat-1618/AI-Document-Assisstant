@@ -15,13 +15,20 @@ def get_text_summary():
 
     summary = generate_answer(
         full_text,
-        "Give a concise paragraph summary of this document."
+        """
+Give a concise structured summary of this document.
+
+Rules:
+- Use short paragraphs
+- Cover main topics
+- Keep explanation simple
+"""
     )
 
     return {"summary": summary}
 
 
-# VISUAL SUMMARY (Mind Map)
+# VISUAL SUMMARY (Structured Mind Map Nodes)
 @router.get("/summary-visual")
 def get_visual_summary():
 
@@ -32,21 +39,30 @@ def get_visual_summary():
     summary = generate_answer(
         full_text,
         """
-Summarize this document into minimum required number of key points.
+Extract the key ideas from this document.
+
+Return output strictly in this format:
+
+Idea 1
+Idea 2
+Idea 3
+Idea 4
+Idea 5
 
 Rules:
-- Each point must represent one idea
-- Each point must be on a new line
-- Avoid abbreviations breaking
-- Keep points short
-
-Example format:
-
-1. First idea
-2. Second idea
-3. Third idea
-4. Fourth idea
+- One idea per line
+- No numbering
+- No abbreviations splitting
+- No extra explanation
+- Minimum required number of ideas only
 """
     )
 
-    return {"summary": summary}
+    # Convert text → clean list
+    points = [
+        line.strip()
+        for line in summary.split("\n")
+        if line.strip()
+    ]
+
+    return {"points": points}

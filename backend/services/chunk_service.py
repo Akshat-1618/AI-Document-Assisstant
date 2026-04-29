@@ -1,18 +1,33 @@
+import re
+
+
 def chunk_text(text: str, chunk_size: int = 800, overlap: int = 100):
-    
+
+    """
+    Improved semantic-aware chunking
+
+    Splits text by sentences first, then builds chunks
+    instead of breaking mid-word or mid-sentence.
+    """
+
+    # Split into sentences
+    sentences = re.split(r'(?<=[.!?]) +', text)
+
     chunks = []
+    current_chunk = ""
 
-    start = 0
-    text_length = len(text)
+    for sentence in sentences:
 
-    while start < text_length:
+        if len(current_chunk) + len(sentence) <= chunk_size:
+            current_chunk += " " + sentence
 
-        end = start + chunk_size
+        else:
+            chunks.append(current_chunk.strip())
 
-        chunk = text[start:end]
+            # overlap logic
+            current_chunk = current_chunk[-overlap:] + sentence
 
-        chunks.append(chunk.strip())
-
-        start += chunk_size - overlap
+    if current_chunk:
+        chunks.append(current_chunk.strip())
 
     return chunks

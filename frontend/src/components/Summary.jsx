@@ -3,19 +3,24 @@ import axios from "axios";
 import MindMap from "./MindMap";
 
 function Summary() {
-  const [summary, setSummary] = useState("");
+  const [summaryText, setSummaryText] = useState("");
+  const [summaryPoints, setSummaryPoints] = useState([]);
   const [viewMode, setViewMode] = useState("text");
 
   const generateSummary = async () => {
     try {
       if (viewMode === "text") {
-        const res = await axios.get("http://127.0.0.1:8000/summary-text");
+        const res = await axios.get(
+          "http://127.0.0.1:8000/summary-text"
+        );
 
-        setSummary(res.data.summary);
+        setSummaryText(res.data.summary);
       } else {
-        const res = await axios.get("http://127.0.0.1:8000/summary-visual");
+        const res = await axios.get(
+          "http://127.0.0.1:8000/summary-visual"
+        );
 
-        setSummary(res.data.summary);
+        setSummaryPoints(res.data.points);
       }
     } catch (error) {
       console.error(error);
@@ -27,11 +32,14 @@ function Summary() {
     <div>
       <h2>Document Summary</h2>
 
-      <button onClick={generateSummary}>Generate Summary</button>
+      <button onClick={generateSummary}>
+        Generate Summary
+      </button>
 
       <br />
       <br />
 
+      {/* View Mode Toggle */}
       <div>
         <strong>View Mode:</strong>
 
@@ -60,12 +68,14 @@ function Summary() {
 
       <br />
 
+      {/* TEXT SUMMARY */}
       {viewMode === "text" && (
         <div>
-          <p>{summary}</p>
+          <p>{summaryText}</p>
         </div>
       )}
 
+      {/* VISUAL SUMMARY */}
       {viewMode === "visual" && (
         <div
           style={{
@@ -74,13 +84,10 @@ function Summary() {
             borderRadius: "10px",
             background: "#f9f9f9",
             width: "100%",
-            height: "500px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            height: "520px"
           }}
         >
-          <MindMap summary={summary} />
+          <MindMap points={summaryPoints} />
         </div>
       )}
     </div>
