@@ -1,56 +1,343 @@
+# routers/lab_planner_router.py
+
 from fastapi import APIRouter, UploadFile, File
+
 from datetime import datetime, timedelta
 
 from services.pdf_service import extract_text_from_pdf
 from services.gemini_service import generate_answer
 
-from utils.calendar_utils import (
-    load_calendar,
-    is_exam_day,
-    is_break_day,
-    is_holiday
-)
+from utils.calendar_utils import load_calendar
+from utils.lab_timeline import LAB_TIMELINE
 
 router = APIRouter()
 
 
-# -----------------------------
-# Generate semester week ranges
-# -----------------------------
+# -----------------------------------
+# Generate weeks from timeline
+# -----------------------------------
 
-def generate_weeks(start, end):
+def generate_weeks(calendar):
 
-    weeks = []
+    semester_start = datetime.strptime(
+        calendar["semester"]["start_date"],
+        "%Y-%m-%d"
+    )
 
-    current = start
+    current = semester_start
 
-    while current <= end:
+    rows = []
 
-        week_end = current + timedelta(days=6)
+    week_no = 1
 
-        weeks.append((current, week_end))
+    # -----------------------------------
+    # Calendar dates
+    # -----------------------------------
 
-        current = week_end + timedelta(days=1)
+    t1_start = datetime.strptime(
+        calendar["exams"]["t1"]["start"],
+        "%Y-%m-%d"
+    )
 
-    return weeks
+    t1_end = datetime.strptime(
+        calendar["exams"]["t1"]["end"],
+        "%Y-%m-%d"
+    )
+
+    t2_start = datetime.strptime(
+        calendar["exams"]["t2"]["start"],
+        "%Y-%m-%d"
+    )
+
+    t2_end = datetime.strptime(
+        calendar["exams"]["t2"]["end"],
+        "%Y-%m-%d"
+    )
+
+    break_start = datetime.strptime(
+        calendar["breaks"][0]["start"],
+        "%Y-%m-%d"
+    )
+
+    break_end = datetime.strptime(
+        calendar["breaks"][0]["end"],
+        "%Y-%m-%d"
+    )
+
+    # -----------------------------------
+    # Build rows
+    # -----------------------------------
+
+    for item in LAB_TIMELINE:
+
+        # -----------------------------------
+        # PRACTICE
+        # -----------------------------------
+
+        if item == "PRACTICE":
+
+            # Adjust before T1
+
+            if current < t1_start and \
+               current + timedelta(days=6) >= t1_start:
+
+                week_end = t1_start - timedelta(days=1)
+
+            # Adjust before BREAK
+
+            elif current < break_start and \
+                 current + timedelta(days=6) >= break_start:
+
+                week_end = break_start - timedelta(days=1)
+
+            # Adjust before T2
+
+            elif current < t2_start and \
+                 current + timedelta(days=6) >= t2_start:
+
+                week_end = t2_start - timedelta(days=1)
+
+            else:
+
+                week_end = current + timedelta(days=6)
+
+            rows.append({
+
+                "week": f"Week {week_no}",
+
+                "start": current,
+
+                "end": week_end,
+
+                "type": "PRACTICE"
+
+            })
+
+            current = week_end + timedelta(days=1)
+
+            week_no += 1
+
+        # -----------------------------------
+        # EVALUATION 1
+        # -----------------------------------
+
+        elif item == "EVAL1":
+
+            week_end = current + timedelta(days=6)
+
+            rows.append({
+
+                "week": f"Week {week_no}",
+
+                "start": current,
+
+                "end": week_end,
+
+                "type": "EVAL1"
+
+            })
+
+            current = week_end + timedelta(days=1)
+
+            week_no += 1
+
+        # -----------------------------------
+        # LAB TEST 1
+        # -----------------------------------
+
+        elif item == "LABTEST1":
+
+            week_end = current + timedelta(days=6)
+
+            rows.append({
+
+                "week": f"Week {week_no}",
+
+                "start": current,
+
+                "end": week_end,
+
+                "type": "LABTEST1"
+
+            })
+
+            current = week_end + timedelta(days=1)
+
+            week_no += 1
+
+        # -----------------------------------
+        # T1
+        # -----------------------------------
+
+        elif item == "T1":
+
+            rows.append({
+
+                "week": f"Week {week_no}",
+
+                "start": t1_start,
+
+                "end": t1_end,
+
+                "type": "T1"
+
+            })
+
+            current = t1_end + timedelta(days=1)
+
+            week_no += 1
+
+        # -----------------------------------
+        # BREAK
+        # -----------------------------------
+
+        elif item == "BREAK":
+
+            rows.append({
+
+                "week": f"Week {week_no} & {week_no + 1}",
+
+                "start": break_start,
+
+                "end": break_end,
+
+                "type": "BREAK"
+
+            })
+
+            current = break_end + timedelta(days=1)
+
+            week_no += 2
+
+        # -----------------------------------
+        # T2
+        # -----------------------------------
+
+        elif item == "T2":
+
+            rows.append({
+
+                "week": f"Week {week_no}",
+
+                "start": t2_start,
+
+                "end": t2_end,
+
+                "type": "T2"
+
+            })
+
+            current = t2_end + timedelta(days=1)
+
+            week_no += 1
+
+        # -----------------------------------
+        # EVALUATION 2
+        # -----------------------------------
+
+        elif item == "EVAL2":
+
+            week_end = current + timedelta(days=6)
+
+            rows.append({
+
+                "week": f"Week {week_no}",
+
+                "start": current,
+
+                "end": week_end,
+
+                "type": "EVAL2"
+
+            })
+
+            current = week_end + timedelta(days=1)
+
+            week_no += 1
+
+        # -----------------------------------
+        # LAB TEST 2
+        # -----------------------------------
+
+        elif item == "LABTEST2":
+
+            week_end = current + timedelta(days=6)
+
+            rows.append({
+
+                "week": f"Week {week_no}",
+
+                "start": current,
+
+                "end": week_end,
+
+                "type": "LABTEST2"
+
+            })
+
+            current = week_end + timedelta(days=1)
+
+            week_no += 1
+
+        # -----------------------------------
+        # PROJECT
+        # -----------------------------------
+
+        elif item == "PROJECT":
+
+            week_end = current + timedelta(days=6)
+
+            rows.append({
+
+                "week": f"Week {week_no}",
+
+                "start": current,
+
+                "end": week_end,
+
+                "type": "PROJECT"
+
+            })
+
+            break
+
+    return rows
 
 
-# -----------------------------
-# Extract lab experiments
-# -----------------------------
+# -----------------------------------
+# Extract useful lab topics
+# -----------------------------------
 
 def extract_lab_topics(text):
 
     prompt = f"""
-Extract lab experiment titles from this syllabus.
+You are given a lab syllabus.
 
-Return format:
+Extract ONLY actual lab experiment topics.
 
-Experiment 1
-Experiment 2
-Experiment 3
+RULES:
+- Ignore headings
+- Ignore faculty names
+- Ignore credits
+- Ignore course outcomes
+- Ignore evaluation criteria
+- Ignore semester details
+- Return concise lab topics only
 
-Syllabus:
+Return:
+- One topic per line
+- No numbering
+- No explanations
+
+Example:
+
+Socket Programming
+Wireshark
+NS2 Simulation
+IoT Programs
+Black Box Testing
+
+SYLLABUS:
 
 {text}
 """
@@ -59,155 +346,253 @@ Syllabus:
 
         topics = generate_answer(text, prompt)
 
-        if topics:
+        clean_topics = []
 
-            return [
-                t.strip()
-                for t in topics.split("\n")
-                if t.strip()
-            ]
+        for t in topics.split("\n"):
 
-    except Exception as e:
+            t = t.strip()
 
-        print("Gemini failed — switching to fallback parser")
+            if len(t) < 3:
+                continue
 
-    # ---------------------------
-    # fallback logic (very important)
-    # ---------------------------
+            clean_topics.append(t)
 
-    lines = text.split("\n")
+        return clean_topics
 
-    experiments = []
+    except Exception:
 
-    for line in lines:
+        return [
 
-        if "experiment" in line.lower() \
-        or "assignment" in line.lower() \
-        or "lab" in line.lower():
+            "Lab Experiment 1",
+            "Lab Experiment 2",
+            "Lab Experiment 3"
 
-            experiments.append(line.strip())
-
-    return experiments
+        ]
 
 
-# -----------------------------
-# Main endpoint
-# -----------------------------
+# -----------------------------------
+# Main Endpoint
+# -----------------------------------
 
 @router.post("/lab-planner-agent")
 
-async def generate_lab_plan(syllabus: UploadFile = File(...)):
+async def generate_lab_plan(
+
+    syllabus: UploadFile = File(...)
+
+):
+
+    # -----------------------------------
+    # Load calendar
+    # -----------------------------------
 
     calendar = load_calendar()
 
-    semester_start = datetime.strptime(
-        calendar["semester"]["start_date"],
-        "%Y-%m-%d"
-    )
+    # -----------------------------------
+    # Extract PDF text
+    # -----------------------------------
 
-    semester_end = datetime.strptime(
-        calendar["semester"]["end_date"],
-        "%Y-%m-%d"
-    )
-
-    # STEP 1: extract syllabus text
     text = extract_text_from_pdf(syllabus)
 
-    # STEP 2: extract experiment list
+    # -----------------------------------
+    # Extract topics
+    # -----------------------------------
+
     experiments = extract_lab_topics(text)
 
-    # STEP 3: generate semester week ranges
-    weeks = generate_weeks(semester_start, semester_end)
+    # -----------------------------------
+    # Generate academic rows
+    # -----------------------------------
+
+    weeks = generate_weeks(calendar)
 
     structured_plan = []
 
-    experiment_index = 0
+    topic_index = 0
 
-    for i, (start, end) in enumerate(weeks):
+    # -----------------------------------
+    # Build planner
+    # -----------------------------------
 
-        start_str = start.strftime("%Y-%m-%d")
+    for row in weeks:
+
+        start = row["start"]
+
+        end = row["end"]
+
+        week_name = row["week"]
+
+        row_type = row["type"]
 
         topic = ""
-        task = "Practice Lab"
+
+        task = ""
+
         comment = ""
 
-        # -------------------------
-        # Handle exam windows
-        # -------------------------
+        # -----------------------------------
+        # PRACTICE
+        # -----------------------------------
 
-        if is_exam_day(start_str, calendar):
+        if row_type == "PRACTICE":
 
-            topic = "T‑Exam Week"
+            if topic_index < len(experiments):
+
+                topic = experiments[topic_index]
+
+                topic_index += 1
+
+            else:
+
+                topic = "Lab Practice"
+
+            task = "Practice Lab"
+
+        # -----------------------------------
+        # EVAL 1
+        # -----------------------------------
+
+        elif row_type == "EVAL1":
+
+            topic = (
+                "Evaluation based on "
+                "previous lab experiments"
+            )
+
+            task = "Evaluation-1"
+
+        # -----------------------------------
+        # LAB TEST 1
+        # -----------------------------------
+
+        elif row_type == "LABTEST1":
+
+            topic = (
+                "Lab Test on completed "
+                "experiments"
+            )
+
+            task = "Lab Test-1"
+
+        # -----------------------------------
+        # T1
+        # -----------------------------------
+
+        elif row_type == "T1":
+
+            topic = "T-1 Exam"
+
             task = ""
-            comment = "Exam Week"
 
-        # -------------------------
-        # Handle semester breaks
-        # -------------------------
+            comment = "T-1 Exam"
 
-        elif is_break_day(start_str, calendar):
+        # -----------------------------------
+        # BREAK
+        # -----------------------------------
 
-            topic = ""
+        elif row_type == "BREAK":
+
+            topic = "Semester Break"
+
             task = ""
-            comment = "Semester Break"
 
-        # -------------------------
-        # Handle holidays
-        # -------------------------
+            comment = "Mid Semester Break"
 
-        elif is_holiday(start_str, calendar):
+        # -----------------------------------
+        # T2
+        # -----------------------------------
 
-            topic = ""
+        elif row_type == "T2":
+
+            topic = "T-2 Exam"
+
             task = ""
-            comment = "Holiday"
 
-        # -------------------------
-        # Insert evaluation logic
-        # -------------------------
+            comment = "T-2 Exam"
 
-        elif i == 4:
+        # -----------------------------------
+        # EVAL 2
+        # -----------------------------------
 
-            topic = "Lab Evaluation‑1"
-            task = "Evaluation"
+        elif row_type == "EVAL2":
 
-        elif i == 6:
+            topic = (
+                "Evaluation based on "
+                "advanced experiments"
+            )
 
-            topic = "Lab Test‑1"
-            task = "Lab Test"
+            task = "Evaluation-2"
 
-        elif i == 12:
+        # -----------------------------------
+        # LAB TEST 2
+        # -----------------------------------
 
-            topic = "Lab Evaluation‑2"
-            task = "Evaluation"
+        elif row_type == "LABTEST2":
 
-        elif i == 15:
+            topic = (
+                "Lab Test on advanced "
+                "experiments"
+            )
 
-            topic = "Lab Test‑2"
-            task = "Lab Test"
+            task = "Lab Test-2"
 
-        elif i == len(weeks) - 1:
+        # -----------------------------------
+        # PROJECT
+        # -----------------------------------
 
-            topic = "Project Evaluation"
-            task = "Evaluation"
+        elif row_type == "PROJECT":
 
-        # -------------------------
-        # Normal teaching weeks
-        # -------------------------
+            topic = "PBL Project"
 
-        else:
+            task = "Project Evaluation"
 
-            if experiment_index < len(experiments):
+        # -----------------------------------
+        # Holiday details
+        # -----------------------------------
 
-                topic = experiments[experiment_index]
+        holiday_texts = []
 
-                experiment_index += 1
+        for h in calendar["holidays"]:
+
+            holiday_date = datetime.strptime(
+                h,
+                "%Y-%m-%d"
+            )
+
+            if start <= holiday_date <= end:
+
+                formatted = holiday_date.strftime(
+                    "%d %b (%a)"
+                )
+
+                holiday_texts.append(formatted)
+
+        if holiday_texts:
+
+            holiday_comment = (
+                "Holiday: "
+                + ", ".join(holiday_texts)
+            )
+
+            if comment:
+
+                comment += " | " + holiday_comment
+
+            else:
+
+                comment = holiday_comment
+
+        # -----------------------------------
+        # Append row
+        # -----------------------------------
 
         structured_plan.append({
 
-            "week": f"Week {i+1}",
+            "week": week_name,
 
             "date_range":
-            f"{start.strftime('%d %b')} - {end.strftime('%d %b')}",
+            f"{start.strftime('%d %b')} - "
+            f"{end.strftime('%d %b')}",
 
             "topic": topic,
 

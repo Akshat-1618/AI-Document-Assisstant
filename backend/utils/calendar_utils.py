@@ -1,6 +1,14 @@
+# utils/calendar_utils.py
+
 import json
 import os
 
+from datetime import datetime
+
+
+# -----------------------------------
+# Load Academic Calendar
+# -----------------------------------
 
 def load_calendar():
 
@@ -16,29 +24,110 @@ def load_calendar():
         return json.load(f)["even_sem_2026"]
 
 
-def is_holiday(date_str, calendar):
+# -----------------------------------
+# Generic overlap checker
+# -----------------------------------
 
-    return date_str in calendar["holidays"]
+def date_overlap(
+    start1,
+    end1,
+    start2,
+    end2
+):
+
+    return start1 <= end2 and start2 <= end1
 
 
-def is_exam_day(date_str, calendar):
+# -----------------------------------
+# Check if week overlaps exam
+# -----------------------------------
+
+def is_exam_week(
+    week_start,
+    week_end,
+    calendar
+):
 
     exams = calendar["exams"]
 
     for exam in exams.values():
 
-        if exam["start"] <= date_str <= exam["end"]:
+        exam_start = datetime.strptime(
+            exam["start"],
+            "%Y-%m-%d"
+        )
+
+        exam_end = datetime.strptime(
+            exam["end"],
+            "%Y-%m-%d"
+        )
+
+        if date_overlap(
+            week_start,
+            week_end,
+            exam_start,
+            exam_end
+        ):
 
             return True
 
     return False
 
 
-def is_break_day(date_str, calendar):
+# -----------------------------------
+# Check if week overlaps break
+# -----------------------------------
+
+def is_break_week(
+    week_start,
+    week_end,
+    calendar
+):
 
     for b in calendar["breaks"]:
 
-        if b["start"] <= date_str <= b["end"]:
+        break_start = datetime.strptime(
+            b["start"],
+            "%Y-%m-%d"
+        )
+
+        break_end = datetime.strptime(
+            b["end"],
+            "%Y-%m-%d"
+        )
+
+        if date_overlap(
+            week_start,
+            week_end,
+            break_start,
+            break_end
+        ):
+
+            return True
+
+    return False
+
+
+# -----------------------------------
+# Check holiday inside week
+# -----------------------------------
+
+def has_holiday_in_week(
+    week_start,
+    week_end,
+    calendar
+):
+
+    holidays = calendar["holidays"]
+
+    for h in holidays:
+
+        holiday_date = datetime.strptime(
+            h,
+            "%Y-%m-%d"
+        )
+
+        if week_start <= holiday_date <= week_end:
 
             return True
 
