@@ -4,6 +4,7 @@ import axios from "axios";
 function LabPlanner() {
 
   const [file, setFile] = useState(null);
+
   const [plan, setPlan] = useState([]);
 
   const generatePlan = async () => {
@@ -11,8 +12,8 @@ function LabPlanner() {
     if (!file) {
 
       alert("Upload syllabus PDF");
-      return;
 
+      return;
     }
 
     const formData = new FormData();
@@ -22,19 +23,23 @@ function LabPlanner() {
     try {
 
       const res = await axios.post(
+
         "http://127.0.0.1:8000/lab-planner-agent",
+
         formData
+
       );
+
+      console.log(res.data);
 
       setPlan(res.data.lab_plan);
 
     } catch (err) {
 
       console.error(err);
+
       alert("Lab planner failed");
-
     }
-
   };
 
   return (
@@ -43,7 +48,7 @@ function LabPlanner() {
 
       <h2>Lab Planner</h2>
 
-      <br/>
+      <br />
 
       <input
         type="file"
@@ -51,13 +56,13 @@ function LabPlanner() {
         onChange={(e) => setFile(e.target.files[0])}
       />
 
-      <br/><br/>
+      <br /><br />
 
       <button onClick={generatePlan}>
         Generate Lab Plan
       </button>
 
-      <br/><br/>
+      <br /><br />
 
       {plan.length > 0 && (
 
@@ -68,9 +73,14 @@ function LabPlanner() {
             <tr>
 
               <th>Week</th>
-              <th>Experiment</th>
+
+              <th>Date</th>
+
+              <th>Topic</th>
+
               <th>Task</th>
-              <th>Remark</th>
+
+              <th>Comment</th>
 
             </tr>
 
@@ -83,9 +93,14 @@ function LabPlanner() {
               <tr key={index}>
 
                 <td>{row.week}</td>
-                <td>{row.experiment}</td>
+
+                <td>{row.date_range}</td>
+
+                <td>{row.topic}</td>
+
                 <td>{row.task}</td>
-                <td>{row.remark}</td>
+
+                <td>{row.comment}</td>
 
               </tr>
 
@@ -98,9 +113,7 @@ function LabPlanner() {
       )}
 
     </div>
-
   );
-
 }
 
 export default LabPlanner;
