@@ -12,13 +12,13 @@ async def generate_agentic_plan(
     days: int = Form(...)
 ):
 
-    agent_steps = []
+    # agent_steps = []
 
     combined_text = ""
 
     # STEP 1 — READ DOCUMENTS
 
-    agent_steps.append("Reading uploaded study resources...")
+    # agent_steps.append("Reading uploaded study resources...")
 
     for file in files:
 
@@ -29,7 +29,7 @@ async def generate_agentic_plan(
 
     # STEP 2 — AGENT REASONING (single intelligent prompt)
 
-    agent_steps.append("Analyzing syllabus, notes and PYQs...")
+    # agent_steps.append("Analyzing syllabus, notes and PYQs...")
 
     planner_prompt = f"""
 You are an intelligent study planner agent.
@@ -55,7 +55,7 @@ Day 3: topics
 """
 
 
-    agent_steps.append("Generating optimized study timeline...")
+    # agent_steps.append("Generating optimized study timeline...")
 
     plan = generate_answer(combined_text, planner_prompt)
 
@@ -76,16 +76,16 @@ Day 3: topics
             })
 
 
-    # STEP 4 — REFLECTION STEP
+    # # STEP 4 — REFLECTION STEP
 
-    agent_steps.append("Validating workload balance across study days...")
+    # agent_steps.append("Validating workload balance across study days...")
 
-    agent_steps.append("Final optimized study schedule generated successfully.")
+    # agent_steps.append("Final optimized study schedule generated successfully.")
 
 
     return {
 
         "plan": structured_plan,
-        "agent_steps": agent_steps
+        # "agent_steps": agent_steps
 
     }

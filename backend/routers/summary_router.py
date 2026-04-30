@@ -19,8 +19,9 @@ def get_text_summary():
 Give a concise structured summary of this document.
 
 Rules:
-- Use short paragraphs
+- Use short paragraphs 
 - Cover main topics
+- give proper spacing , indentation
 - Keep explanation simple
 """
     )
