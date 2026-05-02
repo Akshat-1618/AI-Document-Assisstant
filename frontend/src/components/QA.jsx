@@ -37,7 +37,7 @@ function QA(){
         value={question}
         onChange={(e)=>setQuestion(e.target.value)}
       />
-
+      
       <button onClick={askQuestion}>
         Ask
       </button>

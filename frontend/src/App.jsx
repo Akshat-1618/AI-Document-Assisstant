@@ -13,6 +13,7 @@ import Summary from "./components/Summary";
 import Planner from "./components/Planner";
 import LecturePlanner from "./components/LecturePlanner";
 import LabPlanner from "./components/LabPlanner";
+import Podcast from "./components/Podcast";
 
 
 /* ================= GLOBAL CSS ================= */
@@ -458,7 +459,12 @@ icon="📅"
 label="Student Planner"
 collapsed={collapsed}
 />
-
+<NavItem
+to="/podcast"
+icon="🎧"
+label="Document Podcast"
+collapsed={collapsed}
+/>
 
 {/* TEACHER TOOLS */}
 
@@ -561,6 +567,8 @@ return(
 
 function DocumentAssistantPage(){
 
+const [activeTab,setActiveTab]=useState("summary");
+
 return(
 
 <PageShell
@@ -575,10 +583,66 @@ color="purple"
 title="Upload Document"
 sub="PDF, DOCX, TXT supported"
 >
-
 <Upload/>
-
 </CardWrap>
+
+
+{/* TAB SWITCHER */}
+
+<div style={{
+display:"flex",
+gap:"10px",
+marginBottom:"10px"
+}}>
+
+<button
+onClick={()=>setActiveTab("summary")}
+style={{
+padding:"10px 18px",
+borderRadius:"10px",
+border:"none",
+cursor:"pointer",
+fontWeight:"600",
+background:
+activeTab==="summary"
+? "linear-gradient(135deg,#6d5aff,#8b77ff)"
+: "#e9e8ff",
+color:
+activeTab==="summary"
+? "white"
+: "#4c46a6"
+}}
+>
+Summary
+</button>
+
+<button
+onClick={()=>setActiveTab("qa")}
+style={{
+padding:"10px 18px",
+borderRadius:"10px",
+border:"none",
+cursor:"pointer",
+fontWeight:"600",
+background:
+activeTab==="qa"
+? "linear-gradient(135deg,#6d5aff,#8b77ff)"
+: "#e9e8ff",
+color:
+activeTab==="qa"
+? "white"
+: "#4c46a6"
+}}
+>
+Q&A
+</button>
+
+</div>
+
+
+{/* TAB CONTENT */}
+
+{activeTab==="qa" && (
 
 <CardWrap
 icon="💬"
@@ -586,10 +650,13 @@ color="blue"
 title="Ask Anything"
 sub="Ask questions about your document"
 >
-
 <QA/>
-
 </CardWrap>
+
+)}
+
+
+{activeTab==="summary" && (
 
 <CardWrap
 icon="✨"
@@ -597,15 +664,14 @@ color="green"
 title="Generate Summary"
 sub="AI-powered key insights extraction"
 >
-
 <Summary/>
-
 </CardWrap>
+
+)}
 
 </PageShell>
 
 );
-
 }
 
 
@@ -684,8 +750,28 @@ title="Lab Planner"
 subtitle="Generate week-wise lab schedule"
 >
 
+
 <div className="card">
 <LabPlanner/>
+</div>
+
+</PageShell>
+}
+/>
+
+<Route
+path="/podcast"
+element={
+<PageShell
+badge="🎧"
+title="Document Podcast"
+subtitle="Listen to your PDF as AI conversation"
+>
+
+<div className="card">
+
+<Podcast/>
+
 </div>
 
 </PageShell>
