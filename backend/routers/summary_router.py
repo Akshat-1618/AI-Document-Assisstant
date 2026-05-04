@@ -16,13 +16,34 @@ def get_text_summary():
     summary = generate_answer(
         full_text,
         """
-Give a concise structured summary of this document.
+Generate a short structured academic summary of this document.
 
-Rules:
-- Use short paragraphs 
-- Cover main topics
-- give proper spacing , indentation
-- Keep explanation simple
+Format requirements:
+- Use clean headings
+- Use bullet points where useful
+- Use simple readable spacing
+- Keep explanation concise and exam-revision friendly
+
+Output format strictly like this:
+
+Topic Name
+
+- key idea
+- key idea
+- key idea
+
+Next Topic Name
+
+- key idea
+- key idea
+- key idea
+
+IMPORTANT:
+- Do NOT use markdown symbols like ** or ***
+- Do NOT use decorative formatting
+- Do NOT add numbering unless necessary
+- Add spacing between topics
+- Add spacing between topics and keep topic name in capitals
 """
     )
 

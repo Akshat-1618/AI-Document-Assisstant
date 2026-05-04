@@ -1,16 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi import Request
 
 # Routers
 from routers.upload_router import router as upload_router
 from routers.qa_router import router as qa_router
 from routers.summary_router import router as summary_router
 from routers.planner_router import router as planner_router
-
 from routers.lecture_planner_router import router as lecture_router
 from routers.lab_planner_router import router as lab_router
 from routers.podcast_router import router as podcast_router
+
+
+# ================= SESSION DOCUMENT STATUS FLAG =================
+
+
 
 
 # Initialize app
@@ -18,7 +23,7 @@ app = FastAPI(
     title="AI Document Intelligence Backend",
     version="1.0"
 )
-
+app.state.document_uploaded = False
 
 # Enable CORS (React frontend support)
 app.add_middleware(
@@ -46,13 +51,23 @@ def root():
     }
 
 
+# ================= DOCUMENT STATUS ROUTE =================
+
+
+
+@app.get("/document-status")
+def document_status(request: Request):
+
+    return {
+        "uploaded": request.app.state.document_uploaded
+    }
+
+
 # Include routers
 app.include_router(upload_router)
 app.include_router(qa_router)
 app.include_router(summary_router)
 app.include_router(planner_router)
-
 app.include_router(lecture_router)
 app.include_router(lab_router)
-
 app.include_router(podcast_router)

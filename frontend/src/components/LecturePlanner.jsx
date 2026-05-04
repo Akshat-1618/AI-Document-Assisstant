@@ -5,6 +5,7 @@ function LecturePlanner() {
   const [file, setFile] = useState(null);
   const [days, setDays] = useState([]);
   const [plan, setPlan] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState("");
 
   const handleCheckbox = (day) => {
@@ -16,28 +17,39 @@ function LecturePlanner() {
   };
 
   const generatePlan = async () => {
-    if (!file || days.length === 0) {
-      alert("Upload file and select lecture days");
-      return;
-    }
 
-    const formData = new FormData();
-    formData.append("syllabus", file);
-    formData.append("lecture_days", days.join(","));
+  if (!file || days.length === 0) {
+    alert("Upload file and select lecture days");
+    return;
+  }
 
-    try {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/lecture-planner-agent",
-        formData
-      );
+  const formData = new FormData();
+  formData.append("syllabus", file);
+  formData.append("lecture_days", days.join(","));
 
-      setPlan(res.data.lecture_plan || []);
-      setSummary(res.data.message || "");
-    } catch (err) {
-      console.error(err);
-      alert("Lecture planner failed");
-    }
-  };
+  try {
+
+    setLoading(true); // START LOADING
+
+    const res = await axios.post(
+      "http://127.0.0.1:8000/lecture-planner-agent",
+      formData
+    );
+
+    setPlan(res.data.lecture_plan || []);
+    setSummary(res.data.message || "");
+
+  } catch (err) {
+
+    console.error(err);
+    alert("Lecture planner failed");
+
+  } finally {
+
+    setLoading(false); // STOP LOADING
+
+  }
+};
 
   // ✅ CSV DOWNLOAD FUNCTION
   const downloadCSV = () => {
@@ -108,42 +120,75 @@ function LecturePlanner() {
         <b>Select Lecture Days:</b>
         <br />
 
-        {[
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ].map((day) => (
-          <label key={day} style={{ marginRight: "12px" }}>
-            <input
-              type="checkbox"
-              checked={days.includes(day)}
-              onChange={() => handleCheckbox(day)}
-            />{" "}
-            {day}
-          </label>
-        ))}
+       <div
+style={{
+display: "grid",
+gridTemplateColumns: "repeat(2, 1fr)",
+rowGap: "12px",
+columnGap: "40px",
+marginTop: "10px"
+}}
+>
+
+{[
+"Monday",
+"Tuesday",
+"Wednesday",
+"Thursday",
+"Friday",
+"Saturday",
+].map((day) => (
+
+<label
+key={day}
+style={{
+display: "flex",
+alignItems: "center",
+gap: "10px",
+fontSize: "16px",
+cursor: "pointer"
+}}
+>
+
+<input
+type="checkbox"
+checked={days.includes(day)}
+onChange={() => handleCheckbox(day)}
+style={{
+width: "18px",
+height: "18px",
+cursor: "pointer"
+}}
+/>
+
+{day}
+
+</label>
+
+))}
+
+</div>
 
         <br />
         <br />
 
         {/* Buttons */}
         <button
-          onClick={generatePlan}
-          style={{
-            background: "#4f46e5",
-            color: "white",
-            padding: "10px 18px",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          Generate Lecture Plan
-        </button>
+onClick={generatePlan}
+disabled={loading}
+style={{
+background: loading ? "#a5b4fc" : "#4f46e5",
+color: "white",
+padding: "10px 18px",
+border: "none",
+borderRadius: "8px",
+cursor: loading ? "not-allowed" : "pointer",
+fontWeight: "bold",
+opacity: loading ? 0.8 : 1
+}}
+>
+{loading ? "Generating..." : "Generate Lecture Plan"}
+</button>
 
         <button
           onClick={downloadCSV}

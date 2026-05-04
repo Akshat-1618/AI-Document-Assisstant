@@ -45,66 +45,100 @@ overflow:hidden;
 
 /* ================= SIDEBAR ================= */
 
-.sidebar{
-
-width:230px;
-min-width:230px;
-
-background:linear-gradient(170deg,#12122a,#0d0d1e);
-
-border-right:1px solid rgba(255,255,255,.06);
-
-padding:18px 14px;
-
-display:flex;
-flex-direction:column;
-
-transition:.35s ease;
-
-position:relative;
-}
-
-.sidebar.closed{
-
-width:70px;
-min-width:70px;
-
-padding:18px 10px;
-
-align-items:center;
-}
-
-
-/* logo */
+/* ================= LOGO ================= */
 
 .logo-wrap{
 
 display:flex;
+
 align-items:center;
+
 gap:10px;
 
-background:rgba(255,255,255,.05);
+background:rgba(255,255,255,.08);
 
-padding:8px 10px;
+padding:10px 12px;
 
-border-radius:12px;
+border-radius:14px;
 
-margin-bottom:22px;
+margin-bottom:20px;
+
+position:relative;
+
+transition:30s ease;
+
 }
+
+.sidebar.closed{
+width:78px;
+min-width:78px;
+
+padding:18px 0;
+
+align-items:center;
+}
+
+/* collapsed mode → remove box */
+
+.sidebar.closed .logo-wrap{
+
+background:transparent !important;
+
+padding:0 !important;
+
+border:none !important;
+
+box-shadow:none !important;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+}
+
+
+/* remove browser focus outline */
+
+.logo-wrap:focus,
+.logo-wrap:focus-visible,
+.hamburger-toggle:focus,
+.hamburger-toggle:focus-visible{
+
+outline:none;
+
+box-shadow:none;
+
+}
+
+
+/* lightning icon */
 
 .logo-icon{
 
-width:28px;
-height:28px;
+width:34px;
 
-border-radius:8px;
+height:34px;
+
+border-radius:10px;
 
 background:linear-gradient(135deg,#6d5aff,#a78bfa);
 
 display:flex;
+
 align-items:center;
+
 justify-content:center;
+
+flex-shrink:0;
+
+transition:opacity .18s ease, transform .18s ease;
+
 }
+
+
+/* text */
 
 .logo-text{
 
@@ -113,52 +147,77 @@ font-weight:800;
 background:linear-gradient(90deg,#a78bfa,#7dd3fc);
 
 -webkit-background-clip:text;
+
 -webkit-text-fill-color:transparent;
+
 }
 
 
-/* toggle button */
+/* ================= HAMBURGER ================= */
 
-.toggle-btn{
+.hamburger-toggle{
 
-position:absolute;
+margin-left:auto;
 
-top:22px;
-right:-12px;
+background:transparent;
 
-width:26px;
-height:26px;
-
-border-radius:50%;
-
-border:2px solid #0d0d18;
-
-background:#6d5aff;
+border:none;
 
 color:white;
 
+font-size:18px;
+
 cursor:pointer;
 
-display:flex;
-align-items:center;
-justify-content:center;
+transition:opacity .18s ease, transform .18s ease;
 
-font-size:14px;
-
-transition:.25s ease;
-
-box-shadow:0 4px 12px rgba(109,90,255,.35);
 }
 
-.toggle-btn:hover{
 
-background:#8b77ff;
+/* collapsed mode default hidden */
+
+.sidebar.closed .hamburger-toggle{
+
+position:absolute;
+
+opacity:0;
+
+}
+
+
+/* hover lightning → hide lightning */
+
+.sidebar.closed .logo-wrap:hover .logo-icon{
+
+opacity:0;
+
+transform:scale(.9);
+
+}
+
+
+/* hover lightning → show hamburger */
+
+.sidebar.closed .logo-wrap:hover .hamburger-toggle{
+
+opacity:1;
 
 transform:scale(1.1);
+
 }
 
 
-/* section label */
+/* hover effect expanded mode */
+
+.hamburger-toggle:hover{
+
+transform:scale(1.1);
+
+color:#c4b5fd;
+
+}
+
+/* ================= SECTION LABEL ================= */
 
 .sec-label{
 
@@ -170,7 +229,7 @@ margin:16px 0 8px;
 }
 
 
-/* nav item */
+/* ================= NAV ITEM ================= */
 
 .nav-item{
 
@@ -391,6 +450,7 @@ box-shadow:0 6px 14px rgba(109,90,255,.25);
 `;
 
 
+
 /* ================= NAV ITEM ================= */
 
 function NavItem({ to, icon, label, collapsed }){
@@ -426,19 +486,25 @@ return(
 
 <div className={`sidebar ${collapsed?"closed":""}`}>
 
-<div className="logo-wrap">
+<div className="logo-wrap" onClick={collapsed ? onToggle : undefined}>
 
 <div className="logo-icon">⚡</div>
 
-{!collapsed&&<div className="logo-text">StudyAI</div>}
+
+
+{!collapsed && (
+<div className="logo-text">StudyAI</div>
+)}
+<button
+className="hamburger-toggle"
+onClick={!collapsed ? onToggle : undefined}
+>
+☰
+</button>
 
 </div>
 
-<button className="toggle-btn" onClick={onToggle}>
 
-{collapsed?"›":"‹"}
-
-</button>
 
 {/* STUDENT TOOLS */}
 
@@ -456,7 +522,7 @@ collapsed={collapsed}
 <NavItem
 to="/planner"
 icon="📅"
-label="Student Planner"
+label="Study Planner"
 collapsed={collapsed}
 />
 <NavItem

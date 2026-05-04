@@ -1,17 +1,48 @@
 import { useState } from "react";
 import axios from "axios";
 import MindMap from "./MindMap";
+import ReactMarkdown from "react-markdown";
 
 function Summary() {
 
   const [summaryText, setSummaryText] = useState("");
   const [summaryPoints, setSummaryPoints] = useState([]);
+
   const [viewMode, setViewMode] = useState("text");
+
+  const [warning, setWarning] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
 
   const generateSummary = async () => {
 
     try {
+
+      setLoading(true);
+
+      // 🔴 CHECK DOCUMENT STATUS FIRST
+
+      const status = await axios.get(
+        "http://127.0.0.1:8000/document-status"
+      );
+
+      if (!status.data.uploaded) {
+
+        setWarning("⚠ Upload PDF first to generate summary");
+
+        setLoading(false);
+
+        return;
+
+      }
+
+      // remove warning if PDF exists
+
+      setWarning("");
+
+
+      // ✅ GENERATE SUMMARY
 
       if (viewMode === "text") {
 
@@ -21,7 +52,9 @@ function Summary() {
 
         setSummaryText(res.data.summary);
 
-      } else {
+      }
+
+      else {
 
         const res = await axios.get(
           "http://127.0.0.1:8000/summary-visual"
@@ -31,10 +64,19 @@ function Summary() {
 
       }
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error(error);
-      alert("Error generating summary");
+
+      setWarning("Something went wrong while generating summary");
+
+    }
+
+    finally {
+
+      setLoading(false);
 
     }
 
@@ -46,9 +88,6 @@ function Summary() {
     <div>
 
       <h2>Document Summary</h2>
-
-
-      
 
 
       {/* VIEW MODE RADIO BUTTONS */}
@@ -66,6 +105,8 @@ function Summary() {
           }}
         >
 
+          {/* TEXT SUMMARY RADIO */}
+
           <label
             style={{
               display: "flex",
@@ -82,15 +123,15 @@ function Summary() {
               value="text"
               checked={viewMode === "text"}
               onChange={() => setViewMode("text")}
-              style={{
-                accentColor: "#6d5aff"
-              }}
+              style={{ accentColor: "#6d5aff" }}
             />
 
             Text Summary
 
           </label>
 
+
+          {/* VISUAL SUMMARY RADIO */}
 
           <label
             style={{
@@ -99,7 +140,6 @@ function Summary() {
               gap: "6px",
               cursor: "pointer",
               whiteSpace: "nowrap"
-              
             }}
           >
 
@@ -109,9 +149,7 @@ function Summary() {
               value="visual"
               checked={viewMode === "visual"}
               onChange={() => setViewMode("visual")}
-              style={{
-                accentColor: "#6d5aff"
-              }}
+              style={{ accentColor: "#6d5aff" }}
             />
 
             Visual Summary
@@ -120,11 +158,60 @@ function Summary() {
 
         </div>
 
-        <br></br>
-      {/* Generate Button */}
-      <button onClick={generateSummary}>
-        Generate
-      </button>
+
+        {/* GENERATE BUTTON */}
+
+        <br />
+
+        <button
+          onClick={generateSummary}
+          disabled={loading}
+          style={{
+            opacity: loading ? 0.6 : 1,
+            cursor: loading ? "not-allowed" : "pointer"
+          }}
+        >
+          {loading ? "Generating summary..." : "Generate"}
+        </button>
+
+
+        {/* AI LOADING MESSAGE */}
+
+        {loading && (
+
+          <p
+            style={{
+              marginTop: "10px",
+              color: "#6d5aff",
+              fontWeight: "500"
+            }}
+          >
+
+            🤖 AI is preparing your summary...
+
+          </p>
+
+        )}
+
+
+        {/* WARNING MESSAGE */}
+
+        {warning && (
+
+          <p
+            style={{
+              marginTop: "12px",
+              color: "#dc2626",
+              fontWeight: "500"
+            }}
+          >
+
+            {warning}
+
+          </p>
+
+        )}
+
       </div>
 
 
@@ -132,16 +219,59 @@ function Summary() {
 
       <div style={{ marginTop: "20px" }}>
 
-        {viewMode === "text" && (
+
+        {/* TEXT SUMMARY */}
+
+        {viewMode === "text" && summaryText && (
 
           <div>
-            <p>{summaryText}</p>
+
+            <ReactMarkdown
+              components={{
+
+                p: ({ children }) => {
+
+                  const text = children?.[0];
+
+                  const isHeading =
+                    typeof text === "string" &&
+                    text === text.toUpperCase() &&
+                    text.length < 80;
+
+                  return (
+
+                    <p
+                      style={{
+                        fontWeight: isHeading ? "600" : "400",
+                        fontSize: isHeading ? "18px" : "15px",
+                        marginTop: isHeading ? "22px" : "10px",
+                        marginBottom: "8px"
+                      }}
+                    >
+
+                      {children}
+
+                    </p>
+
+                  );
+
+                }
+
+              }}
+            >
+
+              {summaryText}
+
+            </ReactMarkdown>
+
           </div>
 
         )}
 
 
-        {viewMode === "visual" && (
+        {/* VISUAL SUMMARY */}
+
+        {viewMode === "visual" && summaryPoints.length > 0 && (
 
           <div
             style={{

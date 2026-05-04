@@ -8,6 +8,7 @@ function Planner() {
   const [plan, setPlan] = useState([]);
   const [steps, setSteps] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const generatePlan = async () => {
 
@@ -56,75 +57,146 @@ function Planner() {
 
   return (
 
-    <div style={{ color: "black" }}>
+    <div
+      style={{
+        maxWidth: "1100px",
+        width: "90%",
+        margin: "40px auto",
+        background: "white",
+        padding: "48px",
+        borderRadius: "24px",
+        boxShadow: "0 20px 60px rgba(0,0,0,.08)"
+      }}
+    >
 
-      <h2 style={{ marginBottom: "15px" }}>
-        📅 AI Study Planner (Agentic Mode)
+      {/* TITLE */}
+
+      <h2
+        style={{
+          fontSize: "46px",
+          color: "#4f46e5",
+          marginBottom: "8px"
+        }}
+      >
+        Study Planner
       </h2>
+
+
+      <p
+        style={{
+          color: "#6b7280",
+          marginBottom: "30px"
+        }}
+      >
+        Upload syllabus / notes / PYQs and generate a smart study schedule
+      </p>
 
 
       {/* FILE UPLOAD */}
 
-      <div style={{ marginBottom: "20px" }}>
+      <label style={{ fontWeight: "600" }}>
+        Upload Study Material
+      </label>
 
-        <label style={{ fontWeight: "600" }}>
-          Upload Study Material (Syllabus / Notes / PYQs):
-        </label>
 
-        <br /><br />
+      <input
+        type="file"
+        accept=".pdf"
+        multiple
+        onChange={(e) => {
 
-        <input
-          type="file"
-          accept=".pdf"
-          multiple
-          onChange={(e) => setFiles(e.target.files)}
-        />
+setUploading(true);
 
-        {/* SHOW FILE NAMES */}
+setTimeout(() => {
 
-        {files.length > 0 && (
+setFiles(e.target.files);
+setUploading(false);
 
-          <ul style={{ marginTop: "10px" }}>
+}, 700);
 
-            {[...files].map((file, index) => (
+}}
+        style={{
+          marginTop: "12px",
+          marginBottom: "18px",
+          padding: "14px",
+          borderRadius: "12px",
+          border: "2px dashed #c7d2fe",
+          width: "100%",
+          background: "#f8faff"
+        }}
+      />
 
-              <li key={index}>
-                📄 {file.name}
-              </li>
 
-            ))}
+      {/* FILE LIST */}
 
-          </ul>
+     {/* Uploading indicator */}
 
-        )}
+{uploading && (
 
-      </div>
+<p
+style={{
+marginTop: "10px",
+color: "#6d5aff",
+fontWeight: "600"
+}}
+>
+Uploading files...
+</p>
+
+)}
+
+
+{/* Uploaded files list */}
+
+{!uploading && files.length > 0 && (
+
+<ul style={{ marginTop: "12px" }}>
+
+{[...files].map((file, index) => (
+
+<li
+key={index}
+style={{
+color: "#16a34a",
+fontWeight: "600",
+listStyle: "none",
+paddingLeft: "0"
+}}
+>
+✔ {file.name}
+</li>
+
+))}
+
+</ul>
+
+)}
 
 
       {/* DAYS INPUT */}
 
-      <div style={{ marginBottom: "20px" }}>
+      <label style={{ fontWeight: "600" }}>
+        Number of days available
+      </label>
 
-        <label style={{ fontWeight: "600" }}>
-          Number of days available:
-        </label>
 
-        <br /><br />
-
-        <input
-          type="number"
-          placeholder="Example: 5"
-          value={days}
-          onChange={(e) => setDays(e.target.value)}
-          style={{
-            padding: "8px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            width: "200px"
-          }}
-        />
-
-      </div>
+      <input
+        type="number"
+        placeholder="Example: 5"
+        value={days}
+        onChange={(e) => setDays(e.target.value)}
+        style={{
+          marginTop: "12px",
+          marginBottom: "28px",
+          marginLeft:"12px",
+          marginRight:"12px",
+          padding: "14px",
+          borderRadius: "12px",
+          border: "1px solid #e5e7eb",
+          width: "220px",
+          background: "#f9fafb"
+        }}
+      />
 
 
       {/* BUTTON */}
@@ -133,55 +205,25 @@ function Planner() {
         onClick={generatePlan}
         disabled={loading}
         style={{
-          padding: "12px 20px",
-          borderRadius: "8px",
+          padding: "16px 28px",
+          
+          borderRadius: "14px",
           border: "none",
-          background: loading ? "#aaa" : "#6d5aff",
+          background: loading
+            ? "#a5b4fc"
+            : "linear-gradient(135deg,#6d5aff,#8b77ff)",
           color: "white",
           fontWeight: "600",
+          fontSize: "16px",
           cursor: "pointer"
         }}
       >
 
-        {loading ? "Generating Plan..." : "Generate Smart Study Plan"}
+        {loading
+          ? "Generating Plan..."
+          : "Generate Smart Study Plan"}
 
       </button>
-
-
-      <br /><br />
-
-
-      {/* AGENT THINKING STEPS */}
-
-      {steps.length > 0 && (
-
-        <div
-          style={{
-            background: "#eef2ff",
-            padding: "18px",
-            borderRadius: "12px",
-            marginBottom: "30px",
-            borderLeft: "5px solid #6d5aff"
-          }}
-        >
-
-          <strong>🤖 Agent Thinking Process</strong>
-
-          <ul style={{ marginTop: "12px", lineHeight: "1.8" }}>
-
-            {steps.map((step, index) => (
-
-              <li key={index}>
-                {step}
-              </li>
-
-            ))}
-
-          </ul>
-
-        </div>
-
-      )}
 
 
       {/* OUTPUT TABLE */}
@@ -190,9 +232,10 @@ function Planner() {
 
         <div
           style={{
-            borderRadius: "12px",
+            marginTop: "40px",
+            borderRadius: "16px",
             overflow: "hidden",
-            border: "1px solid #ddd"
+            border: "1px solid #e5e7eb"
           }}
         >
 
@@ -208,26 +251,17 @@ function Planner() {
 
               <tr
                 style={{
-                  background: "#6d5aff",
+                  background:
+                    "linear-gradient(135deg,#6d5aff,#8b77ff)",
                   color: "white"
                 }}
               >
 
-                <th
-                  style={{
-                    padding: "14px",
-                    textAlign: "left"
-                  }}
-                >
+                <th style={{ padding: "14px" }}>
                   Day
                 </th>
 
-                <th
-                  style={{
-                    padding: "14px",
-                    textAlign: "left"
-                  }}
-                >
+                <th style={{ padding: "14px" }}>
                   Topics to Study
                 </th>
 
@@ -244,13 +278,15 @@ function Planner() {
                   key={index}
                   style={{
                     background:
-                      index % 2 === 0 ? "#fafafa" : "white"
+                      index % 2 === 0
+                        ? "#fafafa"
+                        : "white"
                   }}
                 >
 
                   <td
                     style={{
-                      padding: "12px",
+                      padding: "14px",
                       borderTop: "1px solid #eee",
                       fontWeight: "600"
                     }}
@@ -260,7 +296,7 @@ function Planner() {
 
                   <td
                     style={{
-                      padding: "12px",
+                      padding: "14px",
                       borderTop: "1px solid #eee"
                     }}
                   >
@@ -282,6 +318,7 @@ function Planner() {
     </div>
 
   );
+
 }
 
 export default Planner;
