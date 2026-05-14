@@ -106,46 +106,22 @@ AI Processing (LLM)
 - Merges audio clips seamlessly using Pydub
 
 ---
+# 📸 Output Features
 
-# ⚙️ Installation & Setup
+## 📄 Visual Summary
+<img width="1247" height="655" alt="image" src="https://github.com/user-attachments/assets/776eb40e-a624-47e6-aeb9-b7f5cc368147" />
 
-## Clone Repository
+## 🎙️ Podcast Generation
+<img width="1244" height="657" alt="image" src="https://github.com/user-attachments/assets/76c158ab-2daa-4b93-bbd1-fc1f023cd939" />
 
-```bash
-git clone https://github.com/your-username/ai-document-intelligence-system.git
 
-cd ai-document-intelligence-system
-```
+## 📅 Lecture Planner
+<img width="1235" height="654" alt="image" src="https://github.com/user-attachments/assets/bb275d0e-76af-4ac5-b23e-5a823a1da63a" />
 
----
 
-# Backend Setup
+## 🧪 Lab Planner
+<img width="1243" height="667" alt="image" src="https://github.com/user-attachments/assets/632306bd-5d9b-4765-a4b9-0de8546938c4" />
 
-```bash
-cd backend
-
-pip install -r requirements.txt
-
-uvicorn main:app --reload
-```
-
-Backend runs on:
-
-```text
-http://127.0.0.1:8000
-```
-
----
-
-# Frontend Setup
-
-```bash
-cd frontend
-
-npm install
-
-npm run dev
-```
 
 ---
 
@@ -215,22 +191,45 @@ npm run dev
 - Cloud deployment for scalability
 
 ---
-# 📸 Output Features
+# ⚙️ Installation & Setup
 
-## 📄 Visual Summary
-<img width="1247" height="655" alt="image" src="https://github.com/user-attachments/assets/776eb40e-a624-47e6-aeb9-b7f5cc368147" />
+## Clone Repository
 
-## 🎙️ Podcast Generation
-<img width="1244" height="657" alt="image" src="https://github.com/user-attachments/assets/76c158ab-2daa-4b93-bbd1-fc1f023cd939" />
+```bash
+git clone https://github.com/your-username/ai-document-intelligence-system.git
 
+cd ai-document-intelligence-system
+```
 
-## 📅 Lecture Planner
-<img width="1235" height="654" alt="image" src="https://github.com/user-attachments/assets/bb275d0e-76af-4ac5-b23e-5a823a1da63a" />
+---
 
+# Backend Setup
 
-## 🧪 Lab Planner
-<img width="1243" height="667" alt="image" src="https://github.com/user-attachments/assets/632306bd-5d9b-4765-a4b9-0de8546938c4" />
+```bash
+cd backend
 
+pip install -r requirements.txt
+
+uvicorn main:app --reload
+```
+
+Backend runs on:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+# Frontend Setup
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
 
 ---
 
